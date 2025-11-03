@@ -50,7 +50,25 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
 
             ///////////////////////////////////////////////////////////////////////////////////////////
             //Add your FORK output here
+        
 
+        
+            //Make new PCB (notice how partition is not assigned yet)
+            PCB new_PCB(current.PID + 1 , current.PID, current.program_name, current.size, -1);
+            //Update memory (partition is assigned here, you must implement this function)
+            if(!allocate_memory(&new_PCB)) {
+                std::cerr << "ERROR! Memory allocation failed!" << std::endl;
+            }
+            current = new_PCB;
+            execution += std::to_string(current_time) + ", " + std::to_string(duration_intr) + ", cloning the PCB\n";
+            current_time += duration_intr;
+
+            execution += std::to_string(current_time) + ", " + std::to_string(0) + ", scheduler called\n";
+            current_time += 0;
+
+            execution +=  std::to_string(current_time) + ", 1, IRET\n";
+            current_time += 1;
+            
 
 
             ///////////////////////////////////////////////////////////////////////////////////////////
@@ -90,8 +108,11 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
             i = parent_index;
 
             ///////////////////////////////////////////////////////////////////////////////////////////
-            //With the child's trace, run the child (HINT: think recursion)
+            auto[new_execution, new_system_status, new_current_time] = simulate_trace(child_trace, current_time, vectors, delays, external_files, current, wait_queue);
 
+            execution += new_execution;
+            system_status = new_system_status;
+            current_time = new_current_time;                
 
 
             ///////////////////////////////////////////////////////////////////////////////////////////
@@ -104,6 +125,34 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
 
             ///////////////////////////////////////////////////////////////////////////////////////////
             //Add your EXEC output here
+            std::cout<<program_name + "\n";
+            int memory_size = (get_size(program_name, external_files));
+            std::cout<<std::to_string(memory_size) + "\n";
+            execution += std::to_string(current_time) + ", " + std::to_string(duration_intr) + ", Program is " + std::to_string(memory_size)  + " Mb large\n";
+            std::cout<<execution;
+            current_time += duration_intr;
+
+            
+            current.program_name = program_name;
+            //Update memory (partition is assigned here, you must implement this function)
+            if(!allocate_memory(&current)) {
+                std::cerr << "ERROR! Memory allocation failed!" << std::endl;
+            }
+            execution += std::to_string(current_time) + ", " + std::to_string(memory_size * 15) + ", loading program into memory\n";
+            current_time += memory_size * 15;
+
+            execution += std::to_string(current_time) + ", " + std::to_string(3) + ", marking partition as occupied\n";
+            current_time += 3;
+
+            execution += std::to_string(current_time) + ", " + std::to_string(6) + ", updating PCB\n";
+            current_time += 6;
+
+            execution += std::to_string(current_time) + ", " + std::to_string(0) + ", scheduler called\n";
+            current_time += 0;
+
+            execution +=  std::to_string(current_time) + ", 1, IRET\n";
+            current_time += 1;
+
 
 
 
@@ -121,7 +170,11 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
             ///////////////////////////////////////////////////////////////////////////////////////////
             //With the exec's trace (i.e. trace of external program), run the exec (HINT: think recursion)
 
+            auto[new_execution, new_system_status, new_current_time] = simulate_trace(exec_traces, current_time, vectors, delays, external_files, current, wait_queue);
 
+            execution += new_execution;
+            system_status = new_system_status;
+            current_time = new_current_time;
 
             ///////////////////////////////////////////////////////////////////////////////////////////
 
