@@ -1,5 +1,5 @@
-#ifndef INTERRUPTS_HPP_
-#define INTERRUPTS_HPP_
+#ifndef INTERRUPPTS_HPP_
+#define INTERRUPPTS_HPP_
 
 #include<iostream>
 #include<fstream>
