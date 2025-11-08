@@ -9,6 +9,7 @@
 
 std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string> trace_file, int time, std::vector<std::string> vectors, std::vector<int> delays, std::vector<external_file> external_files, PCB current, std::vector<PCB> wait_queue) {
 
+
     std::string trace;      //!< string to store single line of trace file
     std::string execution = "";  //!< string to accumulate the execution output
     std::string system_status = "";  //!< string to accumulate the system status output
@@ -28,8 +29,21 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
             execution += intr;
             current_time = time;
 
-            execution += std::to_string(current_time) + ", " + std::to_string(delays[duration_intr]) + ", SYSCALL ISR (ADD STEPS HERE)\n";
-            current_time += delays[duration_intr];
+            //example ISR activities
+            //assume each activities takes approx 1/3 of time
+            int call_driver, transfer_data, check_errors;
+            call_driver = (delays[duration_intr]) / 3;
+            transfer_data = (delays[duration_intr]) / 3;
+            check_errors = (delays[duration_intr]) / 3 + (delays[duration_intr]) % 3;
+
+            execution += std::to_string(current_time) + ", "  + std::to_string(call_driver)  + ", call device driver\n"; 
+            current_time += call_driver;
+
+            execution += std::to_string(current_time) + ", "  + std::to_string(transfer_data)  + ", transfer data\n"; 
+            current_time += transfer_data;
+
+            execution += std::to_string(current_time) + ", "  + std::to_string(check_errors)  + ", check for errors\n"; 
+            current_time += check_errors;
 
             execution +=  std::to_string(current_time) + ", 1, IRET\n";
             current_time += 1;
@@ -38,8 +52,21 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
             current_time = time;
             execution += intr;
 
-            execution += std::to_string(current_time) + ", " + std::to_string(delays[duration_intr]) + ", ENDIO ISR(ADD STEPS HERE)\n";
-            current_time += delays[duration_intr];
+           //example end io activities
+            //assume each activities takes approx 1/3 of time
+            int store_info, check_errors, finish_io;
+            store_info = (delays[duration_intr]) / 3;
+            check_errors = (delays[duration_intr]) / 3;
+            finish_io = (delays[duration_intr]) / 3 + (delays[duration_intr]) % 3;
+
+            execution += std::to_string(current_time) + ", "  + std::to_string(store_info)  + ", store information in memory\n"; 
+            current_time += store_info;
+
+            execution += std::to_string(current_time) + ", "  + std::to_string(check_errors)  + ", check for errors\n"; 
+            current_time += check_errors;
+
+            execution += std::to_string(current_time) + ", "  + std::to_string(finish_io)  + ", finish END_IO process\n"; 
+            current_time += finish_io;
 
             execution +=  std::to_string(current_time) + ", 1, IRET\n";
             current_time += 1;
@@ -54,12 +81,18 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
 
         
             //Make new PCB (notice how partition is not assigned yet)
-            PCB new_PCB(current.PID + 1 , current.PID, current.program_name, current.size, -1);
+            PCB child(current.PID + 1 , current.PID, current.program_name, current.size, -1);
+
+            
             //Update memory (partition is assigned here, you must implement this function)
-            if(!allocate_memory(&new_PCB)) {
+            if(!allocate_memory(&child)) {
                 std::cerr << "ERROR! Memory allocation failed!" << std::endl;
             }
-            current = new_PCB;
+
+            wait_queue.push_back(current);
+
+
+           
             execution += std::to_string(current_time) + ", " + std::to_string(duration_intr) + ", cloning the PCB\n";
             current_time += duration_intr;
 
@@ -68,6 +101,10 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
 
             execution +=  std::to_string(current_time) + ", 1, IRET\n";
             current_time += 1;
+            
+            system_status += std::to_string(current_time) + ": current trace: " + trace + "\n";
+            system_status += print_PCB(child, wait_queue);
+
             
 
 
@@ -108,36 +145,47 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
             i = parent_index;
 
             ///////////////////////////////////////////////////////////////////////////////////////////
-            auto[new_execution, new_system_status, new_current_time] = simulate_trace(child_trace, current_time, vectors, delays, external_files, current, wait_queue);
+            
+            auto[new_execution, new_system_status, new_current_time] = simulate_trace(child_trace, current_time, vectors, delays, external_files, child, wait_queue);
 
             execution += new_execution;
-            system_status = new_system_status;
-            current_time = new_current_time;                
+            system_status += new_system_status;
+            current_time = new_current_time;   
+
+            //pops the parent from waiting as it now running since child finished
+            current = wait_queue.back();
+            wait_queue.pop_back();
+
+                       
 
 
             ///////////////////////////////////////////////////////////////////////////////////////////
 
 
         } else if(activity == "EXEC") {
+
+            std::cout << " i test " + std::to_string(i) + "\n";
             auto [intr, time] = intr_boilerplate(current_time, 3, 10, vectors);
             current_time = time;
             execution += intr;
 
             ///////////////////////////////////////////////////////////////////////////////////////////
             //Add your EXEC output here
-            std::cout<<program_name + "\n";
+            
             int memory_size = (get_size(program_name, external_files));
-            std::cout<<std::to_string(memory_size) + "\n";
+            
             execution += std::to_string(current_time) + ", " + std::to_string(duration_intr) + ", Program is " + std::to_string(memory_size)  + " Mb large\n";
-            std::cout<<execution;
+           
             current_time += duration_intr;
 
             
             current.program_name = program_name;
+            current.size = memory_size;
             //Update memory (partition is assigned here, you must implement this function)
             if(!allocate_memory(&current)) {
                 std::cerr << "ERROR! Memory allocation failed!" << std::endl;
             }
+            
             execution += std::to_string(current_time) + ", " + std::to_string(memory_size * 15) + ", loading program into memory\n";
             current_time += memory_size * 15;
 
@@ -147,11 +195,29 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
             execution += std::to_string(current_time) + ", " + std::to_string(6) + ", updating PCB\n";
             current_time += 6;
 
+           
+
             execution += std::to_string(current_time) + ", " + std::to_string(0) + ", scheduler called\n";
             current_time += 0;
 
             execution +=  std::to_string(current_time) + ", 1, IRET\n";
             current_time += 1;
+
+
+            
+
+
+            
+            system_status += std::to_string(current_time) + ": current trace: " + trace + "\n";
+            system_status += print_PCB(current, wait_queue);
+            
+            
+
+           
+            
+
+            
+            
 
 
 
@@ -173,8 +239,17 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
             auto[new_execution, new_system_status, new_current_time] = simulate_trace(exec_traces, current_time, vectors, delays, external_files, current, wait_queue);
 
             execution += new_execution;
-            system_status = new_system_status;
+            system_status += new_system_status;
             current_time = new_current_time;
+
+            
+            
+
+            
+            
+
+           
+            
 
             ///////////////////////////////////////////////////////////////////////////////////////////
 

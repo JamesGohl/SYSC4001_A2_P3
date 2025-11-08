@@ -30,5 +30,7 @@
 621, 10, context saved
 631, 1, find vector 4 in memory position 0x0008
 632, 1, load address 0X0292 into the PC
-633, 250, SYSCALL ISR (ADD STEPS HERE)
+633, 83, call device driver
+716, 83, transfer data
+799, 84, check for errors
 883, 1, IRET
