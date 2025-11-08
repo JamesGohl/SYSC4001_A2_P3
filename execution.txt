@@ -1,0 +1,81 @@
+0, 1, switch to kernel mode
+1, 10, context saved
+11, 1, find vector 2 in memory position 0x0004
+12, 1, load address 0X0695 into the PC
+13, 17, cloning the PCB
+30, 0, scheduler called
+30, 1, IRET
+31, 1, switch to kernel mode
+32, 10, context saved
+42, 1, find vector 3 in memory position 0x0006
+43, 1, load address 0X042B into the PC
+44, 16, Program is 10 Mb large
+60, 150, loading program into memory
+210, 3, marking partition as occupied
+213, 6, updating PCB
+219, 0, scheduler called
+219, 1, IRET
+220, 50, CPU Burst
+270, 1, switch to kernel mode
+271, 10, context saved
+281, 1, find vector 6 in memory position 0x000C
+282, 1, load address 0X0639 into the PC
+283, 88, call device driver
+371, 88, transfer data
+459, 89, check for errors
+548, 1, IRET
+549, 15, CPU Burst
+564, 1, switch to kernel mode
+565, 10, context saved
+575, 1, find vector 7 in memory position 0x000E
+576, 1, load address 0X00BD into the PC
+577, 50, call device driver
+627, 50, transfer data
+677, 52, check for errors
+729, 1, IRET
+730, 20, CPU Burst
+750, 1, switch to kernel mode
+751, 10, context saved
+761, 1, find vector 6 in memory position 0x000C
+762, 1, load address 0X0639 into the PC
+763, 88, store information in memory
+851, 88, check for errors
+939, 89, finish END_IO process
+1028, 1, IRET
+1029, 1, switch to kernel mode
+1030, 10, context saved
+1040, 1, find vector 6 in memory position 0x000C
+1041, 1, load address 0X0639 into the PC
+1042, 88, call device driver
+1130, 88, transfer data
+1218, 89, check for errors
+1307, 1, IRET
+1308, 15, CPU Burst
+1323, 1, switch to kernel mode
+1324, 10, context saved
+1334, 1, find vector 7 in memory position 0x000E
+1335, 1, load address 0X00BD into the PC
+1336, 50, call device driver
+1386, 50, transfer data
+1436, 52, check for errors
+1488, 1, IRET
+1489, 20, CPU Burst
+1509, 1, switch to kernel mode
+1510, 10, context saved
+1520, 1, find vector 6 in memory position 0x000C
+1521, 1, load address 0X0639 into the PC
+1522, 88, store information in memory
+1610, 88, check for errors
+1698, 89, finish END_IO process
+1787, 1, IRET
+1788, 1, switch to kernel mode
+1789, 10, context saved
+1799, 1, find vector 3 in memory position 0x0006
+1800, 1, load address 0X042B into the PC
+1801, 25, Program is 15 Mb large
+1826, 225, loading program into memory
+2051, 3, marking partition as occupied
+2054, 6, updating PCB
+2060, 0, scheduler called
+2060, 1, IRET
+2061, 53, CPU Burst
