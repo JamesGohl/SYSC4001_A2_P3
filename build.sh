@@ -3,4 +3,4 @@ if [ ! -d "bin" ]; then
 else
 	rm bin/*
 fi
-g++ -std=c++17 -g -O0 -I . -o bin/interrupts interrupts.cpp 
+g++ -std=c++17 -g -O0 -I . -o bin/interrupts Interrupts_101299043_101299841.cpp
